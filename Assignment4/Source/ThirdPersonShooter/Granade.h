@@ -22,22 +22,27 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion Properties")
-		float expDelay;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion Properties")
-		float expRadius;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion Properties")
-		float expBaseDamage;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion Properties")
-		UParticleSystem* expEffect;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Explosion Properties")
-		USoundCue* expSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Explosion Properties")
+	float expDelay;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Explosion Properties")
+	float expRadius;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Explosion Properties")
+	float expBaseDamage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Explosion Properties")
+	UParticleSystem* expEffect;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Explosion Properties")
+	USoundCue* expSound;
 
 	FTimerHandle expTimer;
 
 	UFUNCTION(BlueprintCallable)
-		void Explode();
-public:	
+	void Explode();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayExplosionEffect();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

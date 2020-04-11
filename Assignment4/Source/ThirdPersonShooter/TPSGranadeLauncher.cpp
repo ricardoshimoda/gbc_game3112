@@ -8,6 +8,7 @@
 #include "Components/PrimitiveComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Granade.h"
+#include "TPSCharacter.h"
 
 // Sets default values
 ATPSGranadeLauncher::ATPSGranadeLauncher()
@@ -28,7 +29,7 @@ void ATPSGranadeLauncher::BeginPlay()
 void ATPSGranadeLauncher::Fire()
 {
 
-	APawn* MyOwner = Cast<APawn>(GetOwner());
+	ATPSCharacter* MyOwner = Cast<ATPSCharacter>(GetOwner());
 
 	if (MyOwner) {
 
@@ -46,21 +47,15 @@ void ATPSGranadeLauncher::Fire()
 		QueryParams.bTraceComplex = false;
 		QueryParams.bReturnPhysicalMaterial = false;
 
+		PlayMuzzleEffect();
+		/*
 		if (MuzzleEffect) {
+
 			UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
-		}
+		}*/
 
 		FVector MuzzlePosition = MeshComp->GetSocketLocation(MuzzleSocketName);
-
-		if (TrailEffect) {
-
-			UParticleSystemComponent* TrailComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailEffect, MuzzlePosition);
-
-			if (TrailComp) {
-				//opted for a single 1m trail
-				TrailComp->SetVectorParameter(TrailEffectParam, LineEnd);
-			}
-		}
+		PlayTrailEffect(MuzzlePosition, LineEnd);
 
 		FActorSpawnParameters spawnParameters;
 		spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -74,7 +69,29 @@ void ATPSGranadeLauncher::Fire()
 		if (PlayerController) {
 			PlayerController->ClientPlayCameraShake(FireCameraShake);
 		}
+
+		ammoCount--;
+		MyOwner->TriggerOnWeaponAmmoChange(weaponIcon, ammoCount, magazineSize);
+		if (ammoCount == 0 && totalNumberOfBullets > 0)
+		{
+			MyOwner->PlayReloadAnim();
+		}
+
 	}
+}
+
+void ATPSGranadeLauncher::PlayTrailEffect_Implementation(FVector _muzzlePosition, FVector _trailEnd)
+{
+	if (TrailEffect) {
+
+		UParticleSystemComponent* TrailComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TrailEffect, _muzzlePosition);
+
+		if (TrailComp) {
+			//opted for a single 1m trail
+			TrailComp->SetVectorParameter(TrailEffectParam, _trailEnd);
+		}
+	}
+
 }
 
 // Called every frame

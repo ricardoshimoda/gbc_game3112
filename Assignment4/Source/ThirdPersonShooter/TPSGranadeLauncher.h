@@ -28,7 +28,11 @@ protected:
 	AGranade* Granade;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Launch Force")
-		float LaunchForce;
+	float LaunchForce;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void PlayTrailEffect(FVector _muzzlePosition, FVector _trailEnd);
+
 
 public:	
 	// Called every frame

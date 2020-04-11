@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
 #include "Sound/SoundCue.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AGranade::AGranade()
@@ -33,14 +34,29 @@ void AGranade::BeginPlay()
 
 void AGranade::Explode()
 {
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), expEffect, GetActorLocation());
-	UGameplayStatics::SpawnSoundAtLocation(this, expSound, GetActorLocation());
+	PlayExplosionEffect();
 	TArray<AActor*> IgnoreActors;
 	IgnoreActors.Add(this);
 	UGameplayStatics::ApplyRadialDamage(this, expBaseDamage, GetActorLocation(), expRadius, nullptr, IgnoreActors,
 		this, GetInstigatorController(), true);
 	Destroy();
 
+}
+
+void AGranade::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AGranade, expDelay);
+	DOREPLIFETIME(AGranade, expRadius);
+	DOREPLIFETIME(AGranade, expBaseDamage);
+	DOREPLIFETIME(AGranade, expEffect);
+	DOREPLIFETIME(AGranade, expSound);
+}
+
+void AGranade::PlayExplosionEffect_Implementation()
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), expEffect, GetActorLocation());
+	UGameplayStatics::SpawnSoundAtLocation(this, expSound, GetActorLocation());
 }
 
 // Called every frame
